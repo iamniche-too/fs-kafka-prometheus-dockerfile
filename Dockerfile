@@ -1,10 +1,11 @@
 FROM openjdk:7 
 
-#Download the jar
-RUN apt-get update && apt-get install --assume-yes wget 
+RUN apt-get update && apt-get install --assume-yes curl 
 
-RUN wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.3.1/jmx_prometheus_javaagent-0.3.1.jar -o /usr/bin/jmx_prometheus_javaagent-0.3.1.jar
+RUN curl https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_httpserver/0.12.0/jmx_prometheus_httpserver-0.12.0-jar-with-dependencies.jar -o /usr/bin/jmx_prometheus_httpserver-0.12.0-jar-with-dependencies.jar
 
-COPY kafka-prometheus-metric.yaml /etc/kafka-prometheus/kafka-prometheus-metric.yaml
+COPY http-server-config.yaml /etc/kafka-prometheus-config/
 
-CMD java -javaagent:/usr/bin/jmx_prometheus_javaagent-0.3.1.jar=5555:/etc/kafka-proetheus/kafka-prometheus-metric.yaml
+ENTRYPOINT ["java", "-jar", "/usr/bin/jmx_prometheus_httpserver-0.12.0-jar-with-dependencies.jar", "5556", "/etc/kafka-prometheus-config/http-server-config.yaml"]
+
+CMD ["-Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=5555"]
